@@ -1,25 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
-set -euo pipefail
+set -eu
 
 # chmod +x deploy.sh
-# Uso: ./deploy.sh
+# Uso: sh deploy.sh ou ./deploy.sh
 
 APP_NAME="calculadora-fiscal-brasil"
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="main"
 PORT="3011"
-
-echo "======================================"
-echo "Deploy - Calculadora Fiscal Brasil"
-echo "======================================"
-echo "Data: $(date '+%d/%m/%Y %H:%M:%S')"
-echo "Diretório: $APP_DIR"
-echo "Branch: $BRANCH"
-echo "Porta: $PORT"
-echo
-
-cd "$APP_DIR"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "Erro: git não está instalado ou não está no PATH."
@@ -40,6 +28,19 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Erro: este diretório não parece ser um repositório Git."
   exit 1
 fi
+
+APP_DIR="$(git rev-parse --show-toplevel)"
+
+echo "======================================"
+echo "Deploy - Calculadora Fiscal Brasil"
+echo "======================================"
+echo "Data: $(date '+%d/%m/%Y %H:%M:%S')"
+echo "Diretório: $APP_DIR"
+echo "Branch: $BRANCH"
+echo "Porta: $PORT"
+echo
+
+cd "$APP_DIR"
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "Erro: há alterações locais não commitadas. Faça commit ou stash antes do deploy."
