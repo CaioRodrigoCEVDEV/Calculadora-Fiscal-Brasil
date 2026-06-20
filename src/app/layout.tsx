@@ -6,7 +6,9 @@ import {
   BRAND_APPLE_ICON_PATH,
   BRAND_ICON_192_PATH,
   BRAND_ICON_32_PATH,
+  BRAND_LOGO_HEIGHT,
   BRAND_LOGO_PATH,
+  BRAND_LOGO_WIDTH,
 } from '@/lib/site/brand';
 import { SITE_URL } from '@/lib/site/url';
 
@@ -54,8 +56,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: BRAND_LOGO_PATH,
-        width: 2172,
-        height: 724,
+        width: BRAND_LOGO_WIDTH,
+        height: BRAND_LOGO_HEIGHT,
         alt: APP_NAME,
       },
     ],

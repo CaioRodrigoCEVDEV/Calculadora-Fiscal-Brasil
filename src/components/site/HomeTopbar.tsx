@@ -1,7 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { APP_NAME, APP_SHORT_NAME } from '@/lib/site/content';
-import { BRAND_ICON_32_PATH, BRAND_LOGO_PATH } from '@/lib/site/brand';
+import {
+  BRAND_ICON_32_PATH,
+  BRAND_LOGO_HEIGHT,
+  BRAND_LOGO_PATH,
+  BRAND_LOGO_WIDTH,
+} from '@/lib/site/brand';
 
 interface HomeTopbarProps {
   variant?: 'home' | 'detail';
@@ -33,8 +38,8 @@ export function HomeTopbar({ variant = 'home' }: HomeTopbarProps) {
               <Image
                 src={BRAND_LOGO_PATH}
                 alt={APP_NAME}
-                width={2172}
-                height={724}
+                width={BRAND_LOGO_WIDTH}
+                height={BRAND_LOGO_HEIGHT}
                 className="h-10 w-auto sm:h-11"
                 sizes="(min-width: 640px) 220px, 0px"
               />
@@ -59,8 +64,8 @@ export function HomeTopbar({ variant = 'home' }: HomeTopbarProps) {
               <Image
                 src={BRAND_LOGO_PATH}
                 alt={APP_NAME}
-                width={2172}
-                height={724}
+                width={BRAND_LOGO_WIDTH}
+                height={BRAND_LOGO_HEIGHT}
                 className="h-10 w-auto sm:h-11"
                 sizes="(min-width: 640px) 220px, 0px"
               />

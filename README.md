@@ -169,7 +169,7 @@ Configuração PM2 principal:
 - `src/components/site/` concentra home, topbar e FAQ.
 - `src/lib/seo/calculatorRoutes.ts` centraliza as rotas, titles, descriptions e metadados SEO.
 - `src/lib/site/` armazena conteúdo de marca, texto da home e URLs absolutas.
-- `public/brand/` concentra a logo horizontal, o favicon e os ícones derivados.
+- `public/brand/` concentra a logo horizontal (`calculadora-fiscal-brasil-logo.png`), o favicon e os ícones derivados.
 - `src/lib/utils/` reúne formatadores e utilitários simples.
 - `scripts/next-with-env.mjs` carrega `.env.local` antes de iniciar o Next.js.
 
