@@ -148,10 +148,10 @@ const CALCULATOR_ROUTE_CONFIGS: CalculatorRouteConfig[] = [
   {
     slug: 'calculadora-ipva-pec',
     path: '/pt/calculadora-ipva-pec',
-    title: 'Simulador IPVA pela PEC',
+    title: 'Simulador IPVA da PEC do novo IPVA',
     description:
       'Simule o IPVA atual pelo valor FIPE e estado do veículo e compare com uma estimativa baseada no teto de 1% proposto pela PEC do IPVA.',
-    h1: 'Simulador de IPVA pela PEC do IPVA',
+    h1: 'Simulador de IPVA da PEC do novo IPVA',
     intro: [
       'Compare uma estimativa do IPVA atual do seu estado com uma simulação baseada no teto de 1% proposto pela PEC do IPVA.',
       'Informe o valor FIPE do veículo e o estado de registro para visualizar a comparação e a economia estimada.',
