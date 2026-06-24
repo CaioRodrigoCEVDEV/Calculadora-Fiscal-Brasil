@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { HomeTopbar } from '@/components/site/HomeTopbar';
+import { FeedbackPopup } from '@/components/site/FeedbackPopup';
 import { APP_NAME, CALCULATOR_PAGE_DESCRIPTION } from '@/lib/site/content';
 import {
   BRAND_APPLE_ICON_PATH,
@@ -83,6 +84,7 @@ export default function RootLayout({
         <main id="top" className="relative">
           {children}
         </main>
+        <FeedbackPopup />
       </body>
     </html>
   );
