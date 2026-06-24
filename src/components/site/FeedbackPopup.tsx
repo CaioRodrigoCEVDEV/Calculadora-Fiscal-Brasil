@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const FEEDBACK_API_URL = 'http://177.153.60.36:3012/feedbacks';
+const FEEDBACK_API_URL = 'https://api.feedback.caiorodrigocev.com.br/feedbacks';
 
 const feedbackSchema = z.object({
   name: z
