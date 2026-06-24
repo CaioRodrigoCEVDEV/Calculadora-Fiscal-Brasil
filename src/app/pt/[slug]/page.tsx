@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { IcmsAvailableCalculations } from '@/components/icms/IcmsAvailableCalculations';
 import { IcmsCalculator } from '@/components/icms/IcmsCalculator';
 import { HomeLanding } from '@/components/site/HomeLanding';
-import { HomeTopbar } from '@/components/site/HomeTopbar';
 import { APP_NAME } from '@/lib/site/content';
 import { HOME_FAQ_ITEMS } from '@/lib/site/homeContent';
 import { absoluteUrl } from '@/lib/site/url';
@@ -113,13 +112,12 @@ export default async function CalculatorRoutePage({ params }: { params: PagePara
     : null;
 
   return (
-    <main id="top" className="relative">
-      <HomeTopbar variant={isHomeRoute ? 'home' : 'detail'} />
+    <>
       <div className="relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 -z-10 h-80 bg-gradient-to-b from-sky-100 via-slate-50 to-transparent" />
         <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
           {isHomeRoute ? (
-            <HomeLanding initialCalculationType={route.calculationType} />
+            <HomeLanding />
           ) : (
             <>
               <section
@@ -168,6 +166,6 @@ export default async function CalculatorRoutePage({ params }: { params: PagePara
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqList) }}
         />
       ) : null}
-    </main>
+    </>
   );
 }

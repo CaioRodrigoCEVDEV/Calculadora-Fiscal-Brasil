@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { ICMS_EXAMPLES, type IcmsExample } from '@/lib/fiscal/examples';
-import { CALCULATION_TYPE_OPTIONS, UF_OPTIONS, type CalculationType } from '@/lib/fiscal/constants';
+import { UF_OPTIONS, type CalculationType } from '@/lib/fiscal/constants';
 import { buildCalculationMemory } from '@/lib/fiscal/buildCalculationMemory';
 import {
   calculateFiscal,
@@ -52,13 +52,13 @@ function buildDefaultValues(initialCalculationType: CalculationType): IcmsCalcul
   return {
     ...DEFAULT_FORM_VALUES,
     tipoCalculo: initialCalculationType,
+    reducaoBase: initialCalculationType === 'icms_reverso' ? '0' : DEFAULT_FORM_VALUES.reducaoBase,
   };
 }
 
 interface IcmsCalculatorFormProps {
   onResultChange: (values: IcmsCalculationView) => void;
   onClear: () => void;
-  onTypeChange?: (value: CalculationType) => void;
   initialCalculationType?: CalculationType;
 }
 
@@ -116,7 +116,6 @@ function FieldShell({
 export function IcmsCalculatorForm({
   onResultChange,
   onClear,
-  onTypeChange,
   initialCalculationType = 'icms_proprio',
 }: IcmsCalculatorFormProps) {
   const defaultValues = buildDefaultValues(initialCalculationType);
@@ -136,7 +135,6 @@ export function IcmsCalculatorForm({
 
   const onResultChangeRef = useRef(onResultChange);
   const onClearRef = useRef(onClear);
-  const onTypeChangeRef = useRef<IcmsCalculatorFormProps['onTypeChange']>(undefined);
   const feedbackTimerRef = useRef<number | null>(null);
   const [exampleFeedback, setExampleFeedback] = useState<string | null>(null);
   const [activeExampleId, setActiveExampleId] = useState<string | null>(null);
@@ -148,10 +146,6 @@ export function IcmsCalculatorForm({
   useEffect(() => {
     onClearRef.current = onClear;
   }, [onClear]);
-
-  useEffect(() => {
-    onTypeChangeRef.current = onTypeChange;
-  }, [onTypeChange]);
 
   useEffect(() => {
     return () => {
@@ -208,8 +202,6 @@ export function IcmsCalculatorForm({
   }, [tipoCalculo, clearErrors]);
 
   useEffect(() => {
-    onTypeChangeRef.current?.(tipoCalculo);
-
     const formValuesForParse = {
       tipoCalculo,
       valorProduto,
@@ -339,52 +331,30 @@ export function IcmsCalculatorForm({
     });
   }
 
+  const pageExamples = ICMS_EXAMPLES.filter(
+    (e) => e.values.tipoCalculo === initialCalculationType,
+  );
+
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <form className="space-y-5" onSubmit={(event) => event.preventDefault()} noValidate>
-        <section className={sectionClassName}>
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Escolha o cálculo
-            </p>
-            <h2 className="text-lg font-semibold text-slate-950">Tipo de cálculo</h2>
-            <p className="text-sm leading-6 text-slate-600">
-              Os campos abaixo serão ajustados conforme o cálculo escolhido.
-            </p>
-          </div>
+        {pageExamples.length > 0 ? (
+          <section className={sectionClassName}>
+            <div className="space-y-4">
+              <IcmsQuickExamples
+                examples={pageExamples}
+                activeExampleId={activeExampleId}
+                onSelectExample={handleExampleSelect}
+              />
 
-          <div className="space-y-4">
-            <FieldShell id="tipoCalculo" label="Tipo de cálculo">
-              {({ helpId, errorId }) => (
-                <select
-                  id="tipoCalculo"
-                  className={selectClassName}
-                  aria-invalid={Boolean(errors.tipoCalculo)}
-                  aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
-                  {...register('tipoCalculo')}
-                >
-                  {CALCULATION_TYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </FieldShell>
-
-            <IcmsQuickExamples
-              examples={ICMS_EXAMPLES}
-              activeExampleId={activeExampleId}
-              onSelectExample={handleExampleSelect}
-            />
-
-            {exampleFeedback ? (
-              <p className="text-sm font-medium text-sky-700" aria-live="polite">
-                {exampleFeedback}
-              </p>
-            ) : null}
-          </div>
-        </section>
+              {exampleFeedback ? (
+                <p className="text-sm font-medium text-sky-700" aria-live="polite">
+                  {exampleFeedback}
+                </p>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
 
         {showIcmsReverseFields ? (
           <section className={sectionClassName}>

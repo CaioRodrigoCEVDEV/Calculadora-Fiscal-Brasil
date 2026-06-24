@@ -1,9 +1,7 @@
 import Link from 'next/link';
-import { IcmsCalculator } from '@/components/icms/IcmsCalculator';
 import { CALCULATOR_ROUTE_LIST } from '@/lib/seo/calculatorRoutes';
 import { APP_NAME, APP_SLOGAN, APP_SUBTITLE } from '@/lib/site/content';
 import { HOME_BENEFITS, HOME_CONTENT_BLOCKS } from '@/lib/site/homeContent';
-import type { CalculationType } from '@/lib/fiscal/constants';
 import { HomeFaqAccordion } from './HomeFaqAccordion';
 
 function buildCalculatorCtaLabel(title: string) {
@@ -15,13 +13,7 @@ const HOME_CALCULATOR_CARDS = CALCULATOR_ROUTE_LIST.filter(
   (route) => route.slug !== 'calculadora-fiscal',
 );
 
-interface HomeLandingProps {
-  initialCalculationType?: CalculationType;
-}
-
-export function HomeLanding({
-  initialCalculationType = 'icms_proprio',
-}: HomeLandingProps) {
+export function HomeLanding() {
   return (
     <>
       <section className="max-w-4xl space-y-6">
@@ -38,12 +30,12 @@ export function HomeLanding({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <a
-            href="#simule-seu-calculo-fiscal"
+          <Link
+            href="/pt/calculadora-icms"
             className="inline-flex h-11 items-center justify-center rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200"
           >
             Começar cálculo
-          </a>
+          </Link>
           <a
             href="#calculos-fiscais-disponiveis"
             className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-sky-200"
@@ -102,23 +94,6 @@ export function HomeLanding({
             </article>
           ))}
         </div>
-      </section>
-
-      <section
-        id="simule-seu-calculo-fiscal"
-        aria-labelledby="simule-seu-calculo-fiscal-title"
-        className="scroll-mt-24 space-y-4"
-      >
-        <div className="space-y-2">
-          <h2 id="simule-seu-calculo-fiscal-title" className="text-2xl font-semibold tracking-tight text-slate-950">
-            Simule seu cálculo fiscal
-          </h2>
-          <p className="text-sm leading-6 text-slate-600 sm:text-base">
-            Escolha o tipo de cálculo, preencha os dados da operação e veja o resultado com memória detalhada.
-          </p>
-        </div>
-
-        <IcmsCalculator initialCalculationType={initialCalculationType} />
       </section>
 
       <section aria-labelledby="o-que-e-uma-calculadora-fiscal-title" className="space-y-4">

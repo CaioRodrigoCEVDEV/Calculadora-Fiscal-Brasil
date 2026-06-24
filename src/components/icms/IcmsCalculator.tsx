@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IcmsCalculatorForm } from './IcmsCalculatorForm';
 import { IcmsExplanation } from './IcmsExplanation';
 import { IcmsResultCard } from './IcmsResultCard';
@@ -15,11 +15,6 @@ export function IcmsCalculator({
   initialCalculationType = 'icms_proprio',
 }: IcmsCalculatorProps) {
   const [calculation, setCalculation] = useState<IcmsCalculationView | null>(null);
-  const [calculationType, setCalculationType] = useState<CalculationType>(initialCalculationType);
-
-  useEffect(() => {
-    setCalculationType(initialCalculationType);
-  }, [initialCalculationType]);
 
   function handleResultChange(values: IcmsCalculationView) {
     setCalculation(values);
@@ -39,12 +34,11 @@ export function IcmsCalculator({
           initialCalculationType={initialCalculationType}
           onResultChange={handleResultChange}
           onClear={handleClear}
-          onTypeChange={setCalculationType}
         />
         <IcmsResultCard calculation={calculation} />
       </section>
-      <section id="explicacao" className="scroll-mt-24">
-        <IcmsExplanation calculationType={calculationType} />
+      <section id="explicacao" className="mt-8 scroll-mt-24">
+        <IcmsExplanation calculationType={initialCalculationType} />
       </section>
     </>
   );

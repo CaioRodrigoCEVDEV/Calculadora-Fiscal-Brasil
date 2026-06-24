@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { HomeTopbar } from '@/components/site/HomeTopbar';
 import { APP_NAME, CALCULATOR_PAGE_DESCRIPTION } from '@/lib/site/content';
 import {
   BRAND_APPLE_ICON_PATH,
@@ -77,7 +78,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <HomeTopbar />
+        <main id="top" className="relative">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
