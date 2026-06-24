@@ -43,7 +43,7 @@ export const HOME_CONTENT_BLOCKS: HomeContentBlock[] = [
   {
     title: 'Quais impostos posso calcular?',
     content:
-      'A ferramenta permite simular ICMS, ICMS-ST, IPI, PIS, COFINS, DIFAL, FCP, IBS e CBS. Cada modalidade exibe apenas os campos necessários para o cálculo escolhido.',
+      'A ferramenta permite simular ICMS, ICMS reverso, ICMS-ST, IPI, PIS, COFINS, DIFAL, FCP, IBS e CBS. Cada modalidade exibe apenas os campos necessários para o cálculo escolhido.',
   },
   {
     title: 'A calculadora substitui um contador?',
@@ -59,7 +59,7 @@ export const HOME_FAQ_ITEMS: HomeFaqItem[] = [
   },
   {
     question: 'Quais cálculos fiscais estão disponíveis?',
-    answer: 'Atualmente a calculadora simula ICMS, ICMS-ST, IPI, PIS/COFINS, DIFAL, FCP e IBS/CBS.',
+    answer: 'Atualmente a calculadora simula ICMS, ICMS reverso, ICMS-ST, IPI, PIS/COFINS, DIFAL, FCP e IBS/CBS.',
   },
   {
     question: 'A calculadora gera memória de cálculo?',

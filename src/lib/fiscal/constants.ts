@@ -1,5 +1,6 @@
 export type CalculationType =
   | 'icms_proprio'
+  | 'icms_reverso'
   | 'icms_st'
   | 'icms_e_icms_st'
   | 'ipi'
@@ -43,6 +44,7 @@ export const CALCULATION_TYPE_OPTIONS: Array<{
   label: string;
 }> = [
   { value: 'icms_proprio', label: 'ICMS próprio' },
+  { value: 'icms_reverso', label: 'Cálculo reverso' },
   { value: 'icms_st', label: 'ICMS-ST' },
   { value: 'icms_e_icms_st', label: 'ICMS + ICMS-ST' },
   { value: 'ipi', label: 'IPI' },
@@ -54,6 +56,7 @@ export const CALCULATION_TYPE_OPTIONS: Array<{
 
 export const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
   icms_proprio: 'ICMS próprio',
+  icms_reverso: 'Cálculo reverso do ICMS',
   icms_st: 'ICMS-ST',
   icms_e_icms_st: 'ICMS + ICMS-ST',
   ipi: 'IPI',

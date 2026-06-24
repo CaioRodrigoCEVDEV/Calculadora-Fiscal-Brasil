@@ -5,6 +5,7 @@ import { absoluteUrl } from '@/lib/site/url';
 const SITEMAP_PRIORITY_BY_SLUG: Record<string, number> = {
   'calculadora-fiscal': 1,
   'calculadora-icms': 0.9,
+  'calculadora-icms-reverso': 0.9,
   'calculadora-icms-st': 0.9,
   'calculadora-ipi': 0.85,
   'calculadora-pis-cofins': 0.85,

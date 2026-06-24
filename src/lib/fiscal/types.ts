@@ -4,10 +4,12 @@ import type { CalculationType } from './constants';
 
 export type Uf = (typeof UF_OPTIONS)[number];
 export type IpiSource = 'manual' | 'aliquota' | 'zero';
+export type CalculationMetricFormat = 'currency' | 'percent' | 'decimal';
 
 export interface CalculationMetric {
   label: string;
   value: number;
+  format?: CalculationMetricFormat;
 }
 
 export interface CalculationMessage {
@@ -21,6 +23,8 @@ export interface IcmsCalculatorFormInput {
   seguro: string;
   outrasDespesas: string;
   desconto: string;
+  valorIcmsInformado: string;
+  aliquotaIcms: string;
   valorIpiManual: string;
   aliquotaIpi: string;
   ufOrigem: string;
@@ -61,6 +65,13 @@ export interface IcmsCalculatorIpiValues {
   aliquotaIpi: number;
 }
 
+export interface IcmsCalculatorReverseValues {
+  valorProduto: number;
+  valorIcmsInformado: number;
+  aliquotaIcms: number;
+  reducaoBase: number;
+}
+
 export interface IcmsCalculatorStValues {
   aliquotaInternaDestino: number;
   mva: number;
@@ -96,6 +107,7 @@ export interface IcmsCalculatorFormValues
     IcmsCalculatorFiscalValues,
     IcmsCalculatorIpiValues,
     IcmsCalculatorStValues,
+    IcmsCalculatorReverseValues,
     IcmsCalculatorPisCofinsValues,
     IcmsCalculatorDifalValues,
     IcmsCalculatorFcpValues,
@@ -106,6 +118,9 @@ export type IcmsCalculatorParsedValues =
       IcmsCalculatorFiscalValues & {
         tipoCalculo: 'icms_proprio';
       })
+  | (IcmsCalculatorReverseValues & {
+      tipoCalculo: 'icms_reverso';
+    })
   | (IcmsCalculatorBaseValues &
       IcmsCalculatorFiscalValues &
       IcmsCalculatorIpiValues &
@@ -195,8 +210,19 @@ export interface IbsCbsCalculationResult extends CalculationResultBase {
   valorCbs: number;
 }
 
+export interface IcmsReverseCalculationResult extends CalculationResultBase {
+  tipoCalculo: 'icms_reverso';
+  tipoCalculoLabel: string;
+  valorIcmsInformado: number;
+  aliquotaIcms: number;
+  reducaoBase: number;
+  percentualAproveitado: number;
+  baseReduzida: number;
+}
+
 export type FiscalCalculationResult =
   | IcmsProprioCalculationResult
+  | IcmsReverseCalculationResult
   | IcmsStCalculationResult
   | IpiCalculationResult
   | PisCofinsCalculationResult

@@ -6,7 +6,11 @@ import { useForm } from 'react-hook-form';
 import { ICMS_EXAMPLES, type IcmsExample } from '@/lib/fiscal/examples';
 import { CALCULATION_TYPE_OPTIONS, UF_OPTIONS, type CalculationType } from '@/lib/fiscal/constants';
 import { buildCalculationMemory } from '@/lib/fiscal/buildCalculationMemory';
-import { calculateFiscal, normalizeFiscalValues } from '@/lib/fiscal/calculateFiscal';
+import {
+  calculateFiscal,
+  calculateReverseIcmsFinal,
+  normalizeFiscalValues,
+} from '@/lib/fiscal/calculateFiscal';
 import { icmsCalculatorSchema } from '@/lib/fiscal/schemas';
 import type {
   IcmsCalculationView,
@@ -14,6 +18,8 @@ import type {
   IcmsCalculatorParsedValues,
 } from '@/lib/fiscal/types';
 import { IcmsQuickExamples } from './IcmsQuickExamples';
+import { formatDecimal } from '@/lib/utils/formatPercent';
+import { parseDecimal } from '@/lib/utils/parseDecimal';
 
 const DEFAULT_FORM_VALUES: Omit<IcmsCalculatorFormInput, 'tipoCalculo'> = {
   valorProduto: '',
@@ -21,6 +27,8 @@ const DEFAULT_FORM_VALUES: Omit<IcmsCalculatorFormInput, 'tipoCalculo'> = {
   seguro: '',
   outrasDespesas: '',
   desconto: '',
+  valorIcmsInformado: '',
+  aliquotaIcms: '',
   valorIpiManual: '',
   aliquotaIpi: '',
   ufOrigem: '',
@@ -117,6 +125,7 @@ export function IcmsCalculatorForm({
     register,
     reset,
     watch,
+    setValue,
     clearErrors,
     formState: { errors },
   } = useForm<IcmsCalculatorFormInput>({
@@ -158,6 +167,8 @@ export function IcmsCalculatorForm({
   const seguro = watch('seguro');
   const outrasDespesas = watch('outrasDespesas');
   const desconto = watch('desconto');
+  const valorIcmsInformado = watch('valorIcmsInformado');
+  const aliquotaIcms = watch('aliquotaIcms');
   const valorIpiManual = watch('valorIpiManual');
   const aliquotaIpi = watch('aliquotaIpi');
   const ufOrigem = watch('ufOrigem');
@@ -179,6 +190,7 @@ export function IcmsCalculatorForm({
   const isIcmsProprio = tipoCalculo === 'icms_proprio';
   const isIcmsSt = tipoCalculo === 'icms_st';
   const isIcmsCompleto = tipoCalculo === 'icms_e_icms_st';
+  const isIcmsReverse = tipoCalculo === 'icms_reverso';
   const isIpi = tipoCalculo === 'ipi';
   const isPisCofins = tipoCalculo === 'pis_cofins';
   const isDifal = tipoCalculo === 'difal';
@@ -186,6 +198,7 @@ export function IcmsCalculatorForm({
   const isIbsCbs = tipoCalculo === 'ibs_cbs';
 
   const showIcmsFiscalFields = isIcmsProprio || isIcmsSt || isIcmsCompleto || isDifal;
+  const showIcmsReverseFields = isIcmsReverse;
   const showUfDestino = isIcmsSt || isIcmsCompleto || isDifal;
   const showIpiManualField = isIcmsSt || isIcmsCompleto;
   const showIpiRateField = isIcmsSt || isIcmsCompleto || isIpi;
@@ -204,6 +217,8 @@ export function IcmsCalculatorForm({
       seguro: isFcp ? '' : seguro,
       outrasDespesas: isFcp ? '' : outrasDespesas,
       desconto: isFcp ? '' : desconto,
+      valorIcmsInformado,
+      aliquotaIcms,
       valorIpiManual: isIpi || isFcp ? '' : valorIpiManual,
       aliquotaIpi,
       ufOrigem,
@@ -211,7 +226,7 @@ export function IcmsCalculatorForm({
       aliquotaOrigem,
       aliquotaInternaDestino: isDifal || isIcmsSt || isIcmsCompleto ? aliquotaInternaDestino : '',
       mva,
-      reducaoBase: isDifal || isIcmsSt || isIcmsCompleto ? reducaoBase : '',
+      reducaoBase: isDifal || isIcmsSt || isIcmsCompleto || isIcmsReverse ? reducaoBase : '',
       aliquotaPis,
       aliquotaCofins,
       creditoPis,
@@ -238,6 +253,8 @@ export function IcmsCalculatorForm({
     seguro,
     outrasDespesas,
     desconto,
+    valorIcmsInformado,
+    aliquotaIcms,
     valorIpiManual,
     aliquotaIpi,
     ufOrigem,
@@ -256,6 +273,16 @@ export function IcmsCalculatorForm({
     creditoIbs,
     creditoCbs,
   ]);
+
+  useEffect(() => {
+    if (!isIcmsReverse) {
+      return;
+    }
+
+    if (reducaoBase.trim().length > 0) {
+      syncReverseFinalFromReduction(reducaoBase);
+    }
+  }, [isIcmsReverse, valorProduto, aliquotaIcms, reducaoBase]);
 
   function flashFeedback(message: string) {
     setExampleFeedback(message);
@@ -289,6 +316,28 @@ export function IcmsCalculatorForm({
   const selectClassName =
     'mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100';
   const sectionClassName = 'space-y-4 border-b border-slate-100 pb-5 last:border-b-0 last:pb-0';
+
+  function syncReverseFinalFromReduction(nextReduction: string) {
+    if (nextReduction.trim().length === 0) {
+      return;
+    }
+
+    const base = parseDecimal(valorProduto);
+    const aliquota = parseDecimal(aliquotaIcms);
+    const reduction = parseDecimal(nextReduction);
+
+    if (base <= 0 || aliquota <= 0) {
+      return;
+    }
+
+    const finalValue = calculateReverseIcmsFinal(base, aliquota, reduction);
+
+    setValue('valorIcmsInformado', formatDecimal(finalValue, 2), {
+      shouldDirty: true,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }
 
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -337,7 +386,96 @@ export function IcmsCalculatorForm({
           </div>
         </section>
 
-        <section className={sectionClassName}>
+        {showIcmsReverseFields ? (
+          <section className={sectionClassName}>
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Cálculo reverso
+              </h3>
+              <p className="text-sm leading-6 text-slate-600">
+                Informe o total dos produtos, a alíquota e a redução. O ICMS final é recalculado automaticamente.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FieldShell
+                id="valorProduto"
+                label="Valor total dos produtos R$"
+                required
+                error={errors.valorProduto?.message}
+              >
+                {({ helpId, errorId }) => (
+                  <input
+                    id="valorProduto"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="8.254,40"
+                    className={inputClassName}
+                    aria-invalid={Boolean(errors.valorProduto)}
+                    aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
+                    {...register('valorProduto')}
+                  />
+                )}
+              </FieldShell>
+
+              <FieldShell
+                id="aliquotaIcms"
+                label="Alíquota ICMS %"
+                required
+                error={errors.aliquotaIcms?.message}
+              >
+                {({ helpId, errorId }) => (
+                  <input
+                    id="aliquotaIcms"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="12"
+                    className={inputClassName}
+                    aria-invalid={Boolean(errors.aliquotaIcms)}
+                    aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
+                    {...register('aliquotaIcms')}
+                  />
+                )}
+              </FieldShell>
+
+              <FieldShell
+                id="reducaoBase"
+                label="Redução da base %"
+                required
+                error={errors.reducaoBase?.message}
+                helpText="Define o percentual de redução da base. Quanto maior a redução, menor a base de cálculo do ICMS final."
+              >
+                {({ helpId, errorId }) => (
+                  <input
+                    id="reducaoBase"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="70"
+                    className={inputClassName}
+                    aria-invalid={Boolean(errors.reducaoBase)}
+                    aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
+                    {...register('reducaoBase', {
+                      onChange: (event) => {
+                        const nextReduction = event.target.value;
+                        syncReverseFinalFromReduction(nextReduction);
+                      },
+                    })}
+                  />
+                )}
+              </FieldShell>
+            </div>
+
+            <p className="text-xs leading-5 text-slate-500">
+              O ICMS final é ajustado a partir da base de produtos, alíquota e redução, com arredondamento para centavos.
+            </p>
+          </section>
+        ) : null}
+
+        {!showIcmsReverseFields ? (
+          <section className={sectionClassName}>
           <div className="space-y-1">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               Valores da operação
@@ -467,6 +605,7 @@ export function IcmsCalculatorForm({
             </div>
           )}
         </section>
+        ) : null}
 
         {showIcmsFiscalFields ? (
           <section className={sectionClassName}>

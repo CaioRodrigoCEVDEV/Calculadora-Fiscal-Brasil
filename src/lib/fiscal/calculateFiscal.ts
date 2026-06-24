@@ -1,6 +1,7 @@
 import { calculateIcms } from '@/lib/icms/calculateIcms';
 import type { IcmsCalculationResult as LegacyIcmsCalculationResult, IcmsCalculatorFormValues as LegacyIcmsCalculatorFormValues } from '@/lib/icms/types';
 import { CALCULATION_TYPE_LABELS } from './constants';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import type {
   CalculationMessage,
   CalculationMetric,
@@ -10,6 +11,7 @@ import type {
   IcmsCalculatorFormValues,
   IcmsCalculatorParsedValues,
   IcmsProprioCalculationResult,
+  IcmsReverseCalculationResult,
   IcmsStCalculationResult,
   IpiCalculationResult,
   IpiSource,
@@ -19,6 +21,37 @@ import type {
 
 function roundToCents(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+export function calculateReverseIcmsBaseReduzida(
+  valorProduto: number,
+  reducaoBase: number,
+) {
+  return roundToCents(valorProduto * (1 - reducaoBase / 100));
+}
+
+export function calculateReverseIcmsFinal(
+  valorProduto: number,
+  aliquotaIcms: number,
+  reducaoBase: number,
+) {
+  return roundToCents(
+    calculateReverseIcmsBaseReduzida(valorProduto, reducaoBase) * (aliquotaIcms / 100),
+  );
+}
+
+export function calculateReverseIcmsReduction(
+  valorProduto: number,
+  aliquotaIcms: number,
+  valorIcmsFinal: number,
+) {
+  const baseSemReducao = valorProduto * (aliquotaIcms / 100);
+
+  if (baseSemReducao <= 0) {
+    return 0;
+  }
+
+  return 100 - (valorIcmsFinal / baseSemReducao) * 100;
 }
 
 function calculateBaseOperation(values: Pick<
@@ -295,15 +328,56 @@ function buildIbsCbsResult(values: IcmsCalculatorFormValues): IbsCbsCalculationR
   };
 }
 
+function buildReverseIcmsResult(values: IcmsCalculatorFormValues): IcmsReverseCalculationResult {
+  const percentualAproveitado = 100 - values.reducaoBase;
+  const baseReduzida = calculateReverseIcmsBaseReduzida(values.valorProduto, values.reducaoBase);
+  const valorIcmsFinal = calculateReverseIcmsFinal(
+    values.valorProduto,
+    values.aliquotaIcms,
+    values.reducaoBase,
+  );
+
+  const summaryMetrics: CalculationMetric[] = [
+    { label: 'Valor total dos produtos', value: values.valorProduto },
+    { label: 'Alíquota ICMS', value: values.aliquotaIcms, format: 'percent' },
+    { label: 'Redução da base', value: values.reducaoBase, format: 'percent' },
+    { label: 'Percentual aproveitado da base', value: percentualAproveitado, format: 'percent' },
+    { label: 'Base reduzida encontrada', value: baseReduzida },
+  ];
+
+  const messages: CalculationMessage[] = [
+    {
+      tone: 'info',
+      text: 'Ao editar o ICMS final, a redução da base é recalculada automaticamente para manter a consistência do cálculo.',
+    },
+  ];
+
+  return {
+    tipoCalculo: 'icms_reverso',
+    tipoCalculoLabel: CALCULATION_TYPE_LABELS.icms_reverso,
+    baseOperacao: values.valorProduto,
+    valorTotal: valorIcmsFinal,
+    summaryMetrics,
+    messages,
+    valorIcmsInformado: valorIcmsFinal,
+    aliquotaIcms: values.aliquotaIcms,
+    reducaoBase: values.reducaoBase,
+    percentualAproveitado,
+    baseReduzida,
+  };
+}
+
 export function normalizeFiscalValues(
   values: IcmsCalculatorParsedValues,
 ): IcmsCalculatorFormValues {
   return {
-    valorProduto: values.valorProduto,
-    frete: values.frete,
-    seguro: values.seguro,
-    outrasDespesas: values.outrasDespesas,
-    desconto: values.desconto,
+    valorProduto: 'valorProduto' in values ? values.valorProduto : 0,
+    frete: 'frete' in values ? values.frete : 0,
+    seguro: 'seguro' in values ? values.seguro : 0,
+    outrasDespesas: 'outrasDespesas' in values ? values.outrasDespesas : 0,
+    desconto: 'desconto' in values ? values.desconto : 0,
+    valorIcmsInformado: 'valorIcmsInformado' in values ? values.valorIcmsInformado : 0,
+    aliquotaIcms: 'aliquotaIcms' in values ? values.aliquotaIcms : 0,
     ufOrigem: 'ufOrigem' in values ? values.ufOrigem : ('' as IcmsCalculatorFormValues['ufOrigem']),
     ufDestino: 'ufDestino' in values ? values.ufDestino : ('' as IcmsCalculatorFormValues['ufDestino']),
     aliquotaOrigem: 'aliquotaOrigem' in values ? values.aliquotaOrigem : 0,
@@ -338,6 +412,8 @@ export function calculateFiscal(
 
       return decorateIcmsResult(values, legacyResult);
     }
+    case 'icms_reverso':
+      return buildReverseIcmsResult(values);
     case 'ipi':
       return buildStandaloneIpiResult(values);
     case 'pis_cofins':

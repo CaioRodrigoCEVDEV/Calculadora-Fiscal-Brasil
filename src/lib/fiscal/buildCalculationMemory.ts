@@ -3,6 +3,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatDecimal, formatPercent } from '@/lib/utils/formatPercent';
 import type {
   CalculationMessage,
+  CalculationMetric,
   IbsCbsCalculationResult,
   DifalCalculationResult,
   FcpCalculationResult,
@@ -10,6 +11,7 @@ import type {
   IcmsCalculationMemoryLine,
   IcmsCalculatorFormValues,
   IcmsProprioCalculationResult,
+  IcmsReverseCalculationResult,
   IcmsStCalculationResult,
   IpiCalculationResult,
   IpiSource,
@@ -29,6 +31,18 @@ function messageLines(messages: CalculationMessage[]) {
   return ['Observações:', ...messages.map((message) => `- ${message.text}`), ''];
 }
 
+function formatMetricValue(metric: CalculationMetric) {
+  if (metric.format === 'percent') {
+    return formatPercent(metric.value);
+  }
+
+  if (metric.format === 'decimal') {
+    return formatDecimal(metric.value);
+  }
+
+  return formatCurrency(metric.value);
+}
+
 function getIpiUsageLabel(values: IcmsCalculatorFormValues, result: { ipiEfetivo: number; ipiSource: IpiSource; }) {
   if (result.ipiSource === 'manual') {
     return `${formatCurrency(result.ipiEfetivo)}, informado manualmente.`;
@@ -42,6 +56,17 @@ function getIpiUsageLabel(values: IcmsCalculatorFormValues, result: { ipiEfetivo
 }
 
 function buildInputLines(values: IcmsCalculatorFormValues, result: FiscalCalculationResult) {
+  if (values.tipoCalculo === 'icms_reverso') {
+    const lines = [
+      { label: 'Valor total dos produtos', value: formatCurrency(values.valorProduto) },
+      { label: 'Alíquota ICMS', value: formatPercent(values.aliquotaIcms) },
+      { label: 'Redução da base', value: formatPercent(values.reducaoBase) },
+      { label: 'Valor final do ICMS', value: formatCurrency(result.valorTotal) },
+    ];
+
+    return lines;
+  }
+
   const lines =
     values.tipoCalculo === 'fcp'
       ? []
@@ -137,6 +162,34 @@ function buildInputLines(values: IcmsCalculatorFormValues, result: FiscalCalcula
 }
 
 function buildMemoryLines(values: IcmsCalculatorFormValues, result: FiscalCalculationResult) {
+  if (values.tipoCalculo === 'icms_reverso') {
+    const reverseResult = result as IcmsReverseCalculationResult;
+    const lines = [
+      line(
+        'Base reduzida',
+        'Base reduzida = Valor total dos produtos x Percentual aproveitado da base',
+        `Base reduzida = ${formatCurrency(values.valorProduto)} x ${formatPercent(reverseResult.percentualAproveitado)} = ${formatCurrency(reverseResult.baseReduzida)}`,
+      ),
+      line(
+        'ICMS final',
+        'ICMS final = Base reduzida x Alíquota ICMS',
+        `ICMS final = ${formatCurrency(reverseResult.baseReduzida)} x ${formatPercent(values.aliquotaIcms)} = ${formatCurrency(reverseResult.valorTotal)}`,
+      ),
+      line(
+        'Redução ajustada',
+        'Redução ajustada = 100% - (ICMS final ÷ (Valor total dos produtos x Alíquota ICMS))',
+        `Redução ajustada = 100% - (${formatCurrency(reverseResult.valorTotal)} ÷ (${formatCurrency(values.valorProduto)} x ${formatPercent(values.aliquotaIcms)})) = ${formatPercent(reverseResult.reducaoBase)}`,
+      ),
+      line(
+        'Percentual aproveitado',
+        'Percentual aproveitado = 100% - Redução da base',
+        `Percentual aproveitado = 100% - ${formatPercent(values.reducaoBase)} = ${formatPercent(reverseResult.percentualAproveitado)}`,
+      ),
+    ];
+
+    return lines;
+  }
+
   const baseOperation = values.valorProduto + values.frete + values.seguro + values.outrasDespesas - values.desconto;
   const baseOperationText = `Base da operação = ${formatCurrency(values.valorProduto)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} = ${formatCurrency(result.baseOperacao)}`;
 
@@ -388,10 +441,40 @@ function buildMemoryLines(values: IcmsCalculatorFormValues, result: FiscalCalcul
 }
 
 function buildCopyText(
+  values: IcmsCalculatorFormValues,
   result: FiscalCalculationResult,
   inputLines: Array<{ label: string; value: string }>,
   memoryLines: IcmsCalculationMemoryLine[],
 ) {
+  if (values.tipoCalculo === 'icms_reverso') {
+    const reverseResult = result as IcmsReverseCalculationResult;
+    const lines = [
+      'Cálculo reverso do ICMS',
+      '',
+      ...inputLines.map((item) => `${item.label}: ${item.value}`),
+      '',
+      'Memória de cálculo:',
+    ];
+
+    memoryLines.forEach((item) => {
+      lines.push(item.title, item.formula, item.calculation, '');
+    });
+
+    lines.push(
+      'Resultado:',
+      `Valor total dos produtos: ${formatCurrency(values.valorProduto)}`,
+      `Base reduzida: ${formatCurrency(reverseResult.baseReduzida)}`,
+      `ICMS final: ${formatCurrency(result.valorTotal)}`,
+    );
+
+    if (result.messages.length > 0) {
+      lines.push('', 'Aviso:', ...result.messages.map((message) => message.text));
+    }
+
+    lines.push('', 'Aviso fiscal:', FISCAL_WARNING);
+    return lines.join('\n');
+  }
+
   const lines = [
     APP_NAME,
     '',
@@ -415,6 +498,32 @@ function buildCopyText(
 }
 
 function buildShareText(values: IcmsCalculatorFormValues, result: FiscalCalculationResult) {
+  if (values.tipoCalculo === 'icms_reverso') {
+    const reverseResult = result as IcmsReverseCalculationResult;
+
+    const lines = [
+      APP_NAME,
+      '',
+      'Cálculo reverso do ICMS',
+      '',
+      ...buildInputLines(values, result).map((item) => `${item.label}: ${item.value}`),
+      '',
+      `Valor total dos produtos: ${formatCurrency(values.valorProduto)}`,
+      `Base reduzida: ${formatCurrency(reverseResult.baseReduzida)}`,
+      `ICMS final: ${formatCurrency(result.valorTotal)}`,
+      '',
+      'Resumo:',
+      ...reverseResult.summaryMetrics.map((metric) => `${metric.label}: ${formatMetricValue(metric)}`),
+    ];
+
+    if (reverseResult.messages.length > 0) {
+      lines.push('', 'Observações:', ...reverseResult.messages.map((message) => `- ${message.text}`));
+    }
+
+    lines.push('', FISCAL_WARNING);
+    return lines.join('\n');
+  }
+
   const lines = [
     APP_NAME,
     '',
@@ -422,7 +531,7 @@ function buildShareText(values: IcmsCalculatorFormValues, result: FiscalCalculat
     ...buildInputLines(values, result).map((item) => `${item.label}: ${item.value}`),
     '',
     'Resumo:',
-    ...result.summaryMetrics.map((metric) => `${metric.label}: ${formatCurrency(metric.value)}`),
+    ...result.summaryMetrics.map((metric) => `${metric.label}: ${formatMetricValue(metric)}`),
     `Total estimado: ${formatCurrency(result.valorTotal)}`,
   ];
 
@@ -450,7 +559,7 @@ export function buildCalculationMemory(
         lines: memoryLines,
       },
     ],
-    copyText: buildCopyText(result, inputLines, memoryLines),
+    copyText: buildCopyText(values, result, inputLines, memoryLines),
     shareText: buildShareText(values, result),
     fiscalWarning: FISCAL_WARNING,
   };

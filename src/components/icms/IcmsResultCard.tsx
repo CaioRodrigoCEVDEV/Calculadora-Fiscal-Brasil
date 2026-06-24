@@ -2,18 +2,31 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatDecimal, formatPercent } from '@/lib/utils/formatPercent';
 import { APP_NAME, FISCAL_WARNING } from '@/lib/site/content';
-import type { IcmsCalculationView } from '@/lib/fiscal/types';
+import type { CalculationMetric, IcmsCalculationView } from '@/lib/fiscal/types';
 
 interface IcmsResultCardProps {
   calculation: IcmsCalculationView | null;
 }
 
-function MetricRow({ label, value }: { label: string; value: string }) {
+function formatMetricValue(metric: CalculationMetric) {
+  if (metric.format === 'percent') {
+    return formatPercent(metric.value);
+  }
+
+  if (metric.format === 'decimal') {
+    return formatDecimal(metric.value);
+  }
+
+  return formatCurrency(metric.value);
+}
+
+function MetricRow({ metric }: { metric: CalculationMetric }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-white/10 py-2 last:border-b-0 last:pb-0">
-      <span className="text-sm text-slate-300">{label}</span>
-      <span className="text-sm font-semibold text-white">{value}</span>
+      <span className="text-sm text-slate-300">{metric.label}</span>
+      <span className="text-sm font-semibold text-white">{formatMetricValue(metric)}</span>
     </div>
   );
 }
@@ -116,6 +129,7 @@ export function IcmsResultCard({ calculation }: IcmsResultCardProps) {
   }
 
   const { result, memory } = calculation;
+  const isReverse = result.tipoCalculo === 'icms_reverso';
 
   function setTimedFeedback(message: string) {
     setFeedbackMessage(message);
@@ -167,22 +181,28 @@ export function IcmsResultCard({ calculation }: IcmsResultCardProps) {
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-6" aria-live="polite" aria-atomic="true">
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-slate-950">Resultado</h2>
+        <h2 className="text-xl font-semibold text-slate-950">
+          {isReverse ? 'Cálculo reverso do ICMS' : 'Resultado'}
+        </h2>
         <p className="text-sm leading-6 text-slate-600">
-          Resumo rápido da operação e memória de cálculo.
+          {isReverse
+            ? 'Resumo do ICMS final, da redução ajustada e da memória de cálculo.'
+            : 'Resumo rápido da operação e memória de cálculo.'}
         </p>
       </div>
 
       <div className="mt-5 space-y-4">
         <section className="rounded-3xl bg-slate-950 p-5 text-white">
-          <p className="text-sm text-slate-300">Total estimado</p>
+          <p className="text-sm text-slate-300">
+            {isReverse ? 'ICMS final' : 'Total estimado'}
+          </p>
           <p className="mt-1 text-3xl font-semibold tracking-tight">
             {formatCurrency(result.valorTotal)}
           </p>
 
           <div className="mt-4 grid gap-2">
             {result.summaryMetrics.map((metric) => (
-              <MetricRow key={metric.label} label={metric.label} value={formatCurrency(metric.value)} />
+              <MetricRow key={metric.label} metric={metric} />
             ))}
           </div>
         </section>

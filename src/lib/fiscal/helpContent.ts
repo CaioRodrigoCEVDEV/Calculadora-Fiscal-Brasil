@@ -36,6 +36,32 @@ const icmsStHelpContent: CalculationHelpContent = {
   ],
 };
 
+const icmsReverseHelpContent: CalculationHelpContent = {
+  subtitle: 'Resumo curto dos conceitos usados no cálculo reverso do ICMS.',
+  items: [
+    {
+      title: 'Como funciona?',
+      content:
+        'A calculadora usa o valor total dos produtos, a alíquota e a redução da base para exibir o ICMS final. Se o ICMS final for editado, a redução é recalculada automaticamente.',
+    },
+    {
+      title: 'Como a base reduzida é encontrada?',
+      content:
+        'A base reduzida é o total dos produtos multiplicado pelo percentual aproveitado da base, isto é, 100% menos a redução informada.',
+    },
+    {
+      title: 'Como o ICMS final é ajustado?',
+      content:
+        'Ao editar o valor final do ICMS, a calculadora recalcula a redução da base para manter o cálculo consistente com o valor digitado.',
+    },
+    {
+      title: 'Aviso importante',
+      content:
+        'Pode haver pequena diferença de centavos porque o valor final exibido é arredondado. A redução pode receber mais casas decimais para preservar a precisão.',
+    },
+  ],
+};
+
 export const CALCULATION_HELP_CONTENT: Record<CalculationType, CalculationHelpContent> = {
   icms_proprio: {
     subtitle: 'Resumo curto dos conceitos usados no cálculo de ICMS.',
@@ -62,6 +88,7 @@ export const CALCULATION_HELP_CONTENT: Record<CalculationType, CalculationHelpCo
       },
     ],
   },
+  icms_reverso: icmsReverseHelpContent,
   icms_st: icmsStHelpContent,
   icms_e_icms_st: icmsStHelpContent,
   ipi: {

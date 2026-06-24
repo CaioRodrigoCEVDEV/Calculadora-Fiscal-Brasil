@@ -32,6 +32,20 @@ const requiredPositiveDecimalSchema = (message: string) =>
     return parseDecimal(value as string | number | null | undefined);
   }, z.number({ required_error: message, invalid_type_error: message }).positive(message));
 
+const requiredPercentDecimalSchema = (message: string) =>
+  z.preprocess((value) => {
+    if (typeof value === 'string' && value.trim().length === 0) {
+      return undefined;
+    }
+
+    return parseDecimal(value as string | number | null | undefined);
+  },
+    z
+      .number({ required_error: message, invalid_type_error: message })
+      .min(0, message)
+      .max(100, 'A redução da base deve ficar entre 0 e 100%.'),
+  );
+
 const ufSchema = (fieldLabel: 'origem' | 'destino') =>
   z
     .string()
@@ -65,6 +79,13 @@ const stFields = {
   reducaoBase: decimalSchema('A redução de base não pode ser negativa.'),
 } as const;
 
+const reverseFields = {
+  valorProduto: requiredPositiveDecimalSchema('O valor total dos produtos deve ser maior que zero.'),
+  aliquotaIcms: requiredPositiveDecimalSchema('A alíquota ICMS deve ser maior que zero.'),
+  reducaoBase: requiredPercentDecimalSchema('A redução da base deve ser informada.'),
+  valorIcmsInformado: decimalSchema('O valor final do ICMS não pode ser negativo.'),
+} as const;
+
 const pisCofinsFields = {
   aliquotaPis: requiredDecimalSchema('Informe a alíquota de PIS.'),
   aliquotaCofins: requiredDecimalSchema('Informe a alíquota de COFINS.'),
@@ -95,6 +116,11 @@ const icmsStSchema = z.object({
   ...icmsFields,
   ...ipiFields,
   ...stFields,
+});
+
+const icmsReverseSchema = z.object({
+  tipoCalculo: z.literal('icms_reverso'),
+  ...reverseFields,
 });
 
 const icmsCompletoSchema = z.object({
@@ -140,6 +166,7 @@ const ibsCbsSchema = z.object({
 
 export const icmsCalculatorSchema = z.discriminatedUnion('tipoCalculo', [
   icmsProprioSchema,
+  icmsReverseSchema,
   icmsStSchema,
   icmsCompletoSchema,
   ipiSchema,
