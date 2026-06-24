@@ -56,21 +56,6 @@ const CALCULATOR_ROUTE_CONFIGS: CalculatorRouteConfig[] = [
     keywords: ['calculadora ICMS', 'ICMS próprio', 'base ICMS', 'alíquota ICMS'],
   },
   {
-    slug: 'calculadora-icms-reverso',
-    path: '/pt/calculadora-icms-reverso',
-    title: 'Calculadora de ICMS Reverso',
-    description:
-      'Calcule o ICMS final a partir do valor total dos produtos, alíquota e redução da base, com ajuste automático ao editar o valor final.',
-    h1: 'Cálculo reverso do ICMS',
-    intro: [
-      'Informe o total dos produtos, a alíquota e a redução para calcular o ICMS final.',
-      'Se o ICMS final for editado, a redução da base é recalculada automaticamente para manter a consistência.',
-    ],
-    calculationType: 'icms_reverso',
-    breadcrumbLabel: 'ICMS reverso',
-    keywords: ['calculadora ICMS reverso', 'cálculo reverso ICMS', 'ICMS final', 'redução de base ICMS'],
-  },
-  {
     slug: 'calculadora-icms-st',
     path: '/pt/calculadora-icms-st',
     title: 'Calculadora de ICMS-ST',

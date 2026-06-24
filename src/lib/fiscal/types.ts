@@ -117,6 +117,7 @@ export type IcmsCalculatorParsedValues =
   | (IcmsCalculatorBaseValues &
       IcmsCalculatorFiscalValues & {
         tipoCalculo: 'icms_proprio';
+        reducaoBase: number;
       })
   | (IcmsCalculatorReverseValues & {
       tipoCalculo: 'icms_reverso';

@@ -84,6 +84,10 @@ function buildInputLines(values: IcmsCalculatorFormValues, result: FiscalCalcula
         { label: 'UF origem', value: values.ufOrigem },
         { label: 'Alíquota ICMS origem', value: formatPercent(values.aliquotaOrigem) },
       );
+
+      if (values.reducaoBase > 0) {
+        lines.push({ label: 'Redução de base', value: formatPercent(values.reducaoBase) });
+      }
       break;
     case 'icms_st':
     case 'icms_e_icms_st': {
@@ -195,24 +199,48 @@ function buildMemoryLines(values: IcmsCalculatorFormValues, result: FiscalCalcul
 
   if (values.tipoCalculo === 'icms_proprio') {
     const icmsResult = result as IcmsProprioCalculationResult;
+    const baseIcmsProprio = icmsResult.baseIcms;
+    const baseIcmsReduzida = values.reducaoBase > 0
+      ? Math.round((baseIcmsProprio * (1 - values.reducaoBase / 100) + Number.EPSILON) * 100) / 100
+      : baseIcmsProprio;
 
-    return [
+    const lines = [
       line(
         'Base ICMS próprio',
         'Base ICMS próprio = Produto + Frete + Seguro + Outras Despesas - Desconto',
-        `Base ICMS próprio = ${formatCurrency(values.valorProduto)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} = ${formatCurrency(icmsResult.baseIcms)}`,
+        `Base ICMS próprio = ${formatCurrency(values.valorProduto)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} = ${formatCurrency(baseIcmsProprio)}`,
       ),
+    ];
+
+    if (values.reducaoBase > 0) {
+      lines.push(
+        line(
+          'Redução da base',
+          'Redução = valor informado',
+          `Redução = ${formatPercent(values.reducaoBase)}`,
+        ),
+        line(
+          'Base ICMS próprio reduzida',
+          'Base reduzida = Base ICMS próprio x (1 - Redução/100)',
+          `Base reduzida = ${formatCurrency(baseIcmsProprio)} x ${formatDecimal(1 - values.reducaoBase / 100, 3)} = ${formatCurrency(baseIcmsReduzida)}`,
+        ),
+      );
+    }
+
+    lines.push(
       line(
         'ICMS próprio',
         'ICMS próprio = Base ICMS próprio x Alíquota origem',
-        `ICMS próprio = ${formatCurrency(icmsResult.baseIcms)} x ${formatPercent(values.aliquotaOrigem)} = ${formatCurrency(icmsResult.valorIcms)}`,
+        `ICMS próprio = ${formatCurrency(baseIcmsReduzida)} x ${formatPercent(values.aliquotaOrigem)} = ${formatCurrency(icmsResult.valorIcms)}`,
       ),
       line(
         'Total estimado',
         'Total estimado = Produto + Frete + Seguro + Outras Despesas - Desconto',
         `Total estimado = ${formatCurrency(values.valorProduto)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} = ${formatCurrency(icmsResult.valorTotal)}`,
       ),
-    ];
+    );
+
+    return lines;
   }
 
   if (values.tipoCalculo === 'icms_st' || values.tipoCalculo === 'icms_e_icms_st') {

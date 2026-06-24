@@ -108,6 +108,7 @@ const icmsProprioSchema = z.object({
   tipoCalculo: z.literal('icms_proprio'),
   ...commonFields,
   ...icmsFields,
+  reducaoBase: decimalSchema('A redução de base não pode ser negativa.'),
 });
 
 const icmsStSchema = z.object({

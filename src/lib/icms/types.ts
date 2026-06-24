@@ -46,7 +46,7 @@ export interface IcmsCalculatorFormValues
     IcmsCalculatorStValues {}
 
 export type IcmsCalculatorParsedValues =
-  | (IcmsCalculatorBaseValues & { tipoCalculo: 'icms_proprio' })
+  | (IcmsCalculatorBaseValues & { tipoCalculo: 'icms_proprio'; reducaoBase: number })
   | (IcmsCalculatorBaseValues &
       IcmsCalculatorStValues & {
         tipoCalculo: 'icms_st' | 'icms_e_icms_st';

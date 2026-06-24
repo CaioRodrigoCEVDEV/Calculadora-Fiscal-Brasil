@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export function IcmsAvailableCalculations() {
-  const activeItems = ['ICMS', 'ICMS reverso', 'ICMS-ST', 'IPI', 'PIS/COFINS', 'DIFAL', 'FCP', 'IBS/CBS', 'IPVA PEC'];
+  const activeItems = ['ICMS', 'ICMS-ST', 'IPI', 'PIS/COFINS', 'DIFAL', 'FCP', 'IBS/CBS', 'IPVA PEC'];
 
   return (
     <div className="space-y-3 text-sm text-slate-600">

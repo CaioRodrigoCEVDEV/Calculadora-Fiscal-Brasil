@@ -218,7 +218,7 @@ export function IcmsCalculatorForm({
       aliquotaOrigem,
       aliquotaInternaDestino: isDifal || isIcmsSt || isIcmsCompleto ? aliquotaInternaDestino : '',
       mva,
-      reducaoBase: isDifal || isIcmsSt || isIcmsCompleto || isIcmsReverse ? reducaoBase : '',
+      reducaoBase: isIcmsProprio || isDifal || isIcmsSt || isIcmsCompleto || isIcmsReverse ? reducaoBase : '',
       aliquotaPis,
       aliquotaCofins,
       creditoPis,
@@ -664,6 +664,29 @@ export function IcmsCalculatorForm({
                       aria-invalid={Boolean(errors.aliquotaInternaDestino)}
                       aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
                       {...register('aliquotaInternaDestino')}
+                    />
+                  )}
+                </FieldShell>
+              ) : null}
+
+              {isIcmsProprio ? (
+                <FieldShell
+                  id="reducaoBase"
+                  label="Redução de base %"
+                  error={errors.reducaoBase?.message}
+                  helpText="Opcional. Reduz a base de cálculo do ICMS próprio antes de aplicar a alíquota."
+                >
+                  {({ helpId, errorId }) => (
+                    <input
+                      id="reducaoBase"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      placeholder="0"
+                      className={inputClassName}
+                      aria-invalid={Boolean(errors.reducaoBase)}
+                      aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
+                      {...register('reducaoBase')}
                     />
                   )}
                 </FieldShell>

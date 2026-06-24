@@ -70,7 +70,12 @@ export function calculateIcms(
 ): IcmsCalculationResult {
   const baseIcms = calculateBaseIcms(values);
 
-  const valorIcms = roundToCents(baseIcms * (values.aliquotaOrigem / 100));
+  const baseIcmsReduzida =
+    values.reducaoBase > 0
+      ? roundToCents(baseIcms * (1 - values.reducaoBase / 100))
+      : baseIcms;
+
+  const valorIcms = roundToCents(baseIcmsReduzida * (values.aliquotaOrigem / 100));
 
   const isIcmsProprio = values.tipoCalculo === 'icms_proprio';
   const { ipiEfetivo, ipiSource } = isIcmsProprio
@@ -117,7 +122,7 @@ export function calculateIcms(
     icmsStBruto,
     valorIcmsSt,
     valorTotal,
-    reducaoAplicada: !isIcmsProprio && values.reducaoBase > 0,
+    reducaoAplicada: values.reducaoBase > 0,
     icmsStZerado: !isIcmsProprio && valorIcmsStCalculado < 0,
   };
 }

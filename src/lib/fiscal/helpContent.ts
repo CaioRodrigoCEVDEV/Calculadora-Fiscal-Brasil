@@ -79,7 +79,7 @@ export const CALCULATION_HELP_CONTENT: Record<CalculationType, CalculationHelpCo
       {
         title: 'Como o cálculo é feito?',
         content:
-          'O ICMS próprio é calculado multiplicando a base de cálculo pela alíquota de ICMS informada.',
+          'O ICMS próprio é calculado multiplicando a base de cálculo pela alíquota de ICMS informada. Se uma redução de base for informada, a base é reduzida antes de aplicar a alíquota.',
       },
       {
         title: 'Aviso importante',
