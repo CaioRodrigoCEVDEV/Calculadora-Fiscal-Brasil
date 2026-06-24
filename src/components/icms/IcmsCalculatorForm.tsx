@@ -42,6 +42,7 @@ const DEFAULT_FORM_VALUES: Omit<IcmsCalculatorFormInput, 'tipoCalculo'> = {
   creditoPis: '',
   creditoCofins: '',
   aliquotaFcp: '',
+  aliquotaDifal: '',
   aliquotaIbs: '',
   aliquotaCbs: '',
   creditoIbs: '',
@@ -176,6 +177,7 @@ export function IcmsCalculatorForm({
   const creditoPis = watch('creditoPis');
   const creditoCofins = watch('creditoCofins');
   const aliquotaFcp = watch('aliquotaFcp');
+  const aliquotaDifal = watch('aliquotaDifal');
   const aliquotaIbs = watch('aliquotaIbs');
   const aliquotaCbs = watch('aliquotaCbs');
   const creditoIbs = watch('creditoIbs');
@@ -224,6 +226,7 @@ export function IcmsCalculatorForm({
       creditoPis,
       creditoCofins,
       aliquotaFcp: isFcp || isDifal ? aliquotaFcp : '',
+      aliquotaDifal: isIcmsSt || isIcmsCompleto ? aliquotaDifal : '',
       aliquotaIbs,
       aliquotaCbs,
       creditoIbs,
@@ -260,6 +263,7 @@ export function IcmsCalculatorForm({
     creditoPis,
     creditoCofins,
     aliquotaFcp,
+    aliquotaDifal,
     aliquotaIbs,
     aliquotaCbs,
     creditoIbs,
@@ -847,9 +851,30 @@ export function IcmsCalculatorForm({
                   />
                 )}
               </FieldShell>
+
+              <FieldShell
+                id="aliquotaDifal"
+                label="Alíquota DIFAL %"
+                error={errors.aliquotaDifal?.message}
+                helpText="Opcional. Diferencial de alíquota para operações interestaduais com consumidor final."
+              >
+                {({ helpId, errorId }) => (
+                  <input
+                    id="aliquotaDifal"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="0"
+                    className={inputClassName}
+                    aria-invalid={Boolean(errors.aliquotaDifal)}
+                    aria-describedby={[helpId, errorId].filter(Boolean).join(' ') || undefined}
+                    {...register('aliquotaDifal')}
+                  />
+                )}
+              </FieldShell>
             </div>
             <p className="text-xs leading-5 text-slate-500">
-              A redução de base é opcional e reduz a base do ICMS-ST antes da alíquota interna.
+              A redução de base é opcional e reduz a base do ICMS-ST antes da alíquota interna. O DIFAL é opcional e, se informado, é adicionado ao total estimado.
             </p>
           </section>
         ) : null}

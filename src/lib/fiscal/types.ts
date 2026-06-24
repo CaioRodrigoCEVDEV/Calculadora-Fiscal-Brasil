@@ -38,6 +38,7 @@ export interface IcmsCalculatorFormInput {
   creditoPis: string;
   creditoCofins: string;
   aliquotaFcp: string;
+  aliquotaDifal: string;
   aliquotaIbs: string;
   aliquotaCbs: string;
   creditoIbs: string;
@@ -93,6 +94,7 @@ export interface IcmsCalculatorDifalValues {
   aliquotaInternaDestino: number;
   reducaoBase: number;
   aliquotaFcp: number;
+  aliquotaDifal: number;
 }
 
 export interface IcmsCalculatorIbsCbsValues {
@@ -173,6 +175,7 @@ export interface IcmsStCalculationResult
   summaryMetrics: CalculationMetric[];
   messages: CalculationMessage[];
   baseOperacao: number;
+  valorDifal: number;
 }
 
 export interface IpiCalculationResult extends CalculationResultBase {

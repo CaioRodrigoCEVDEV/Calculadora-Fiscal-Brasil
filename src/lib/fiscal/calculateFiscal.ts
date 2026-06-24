@@ -131,12 +131,19 @@ function buildIcmsMessages(result: LegacyIcmsCalculationResult, values: IcmsCalc
     });
   }
 
+  if (values.aliquotaDifal > 0) {
+    messages.push({
+      tone: 'info',
+      text: `DIFAL incluído no total estimado.`,
+    });
+  }
+
   return messages;
 }
 
 function buildIcmsSummaryMetrics(
   values: IcmsCalculatorFormValues,
-  result: LegacyIcmsCalculationResult,
+  result: LegacyIcmsCalculationResult & { valorDifal?: number },
 ): CalculationMetric[] {
   const metrics: CalculationMetric[] = [
     {
@@ -159,6 +166,13 @@ function buildIcmsSummaryMetrics(
     });
   }
 
+  if (result.valorDifal && result.valorDifal > 0) {
+    metrics.push({
+      label: 'DIFAL',
+      value: result.valorDifal,
+    });
+  }
+
   return metrics;
 }
 
@@ -166,23 +180,34 @@ function decorateIcmsResult(
   values: IcmsCalculatorFormValues,
   legacyResult: LegacyIcmsCalculationResult,
 ): IcmsProprioCalculationResult | IcmsStCalculationResult {
-  const messages = buildIcmsMessages(legacyResult, values);
-  const summaryMetrics = buildIcmsSummaryMetrics(values, legacyResult);
+  const baseOperacao = legacyResult.baseIcms;
+  const valorDifal = values.aliquotaDifal > 0
+    ? roundToCents(baseOperacao * (values.aliquotaDifal / 100))
+    : 0;
+
+  const decoratedResult = {
+    ...legacyResult,
+    valorDifal,
+    valorTotal: roundToCents(legacyResult.valorTotal + valorDifal),
+  };
+
+  const messages = buildIcmsMessages(decoratedResult, values);
+  const summaryMetrics = buildIcmsSummaryMetrics(values, decoratedResult);
 
   if (values.tipoCalculo === 'icms_proprio') {
     return {
       ...legacyResult,
       tipoCalculo: 'icms_proprio',
-      baseOperacao: legacyResult.baseIcms,
+      baseOperacao,
       summaryMetrics,
       messages,
     };
   }
 
   return {
-    ...legacyResult,
+    ...decoratedResult,
     tipoCalculo: values.tipoCalculo as 'icms_st' | 'icms_e_icms_st',
-    baseOperacao: legacyResult.baseIcms,
+    baseOperacao,
     summaryMetrics,
     messages,
   };
@@ -391,6 +416,7 @@ export function normalizeFiscalValues(
     creditoPis: 'creditoPis' in values ? values.creditoPis : 0,
     creditoCofins: 'creditoCofins' in values ? values.creditoCofins : 0,
     aliquotaFcp: 'aliquotaFcp' in values ? values.aliquotaFcp : 0,
+    aliquotaDifal: 'aliquotaDifal' in values ? values.aliquotaDifal : 0,
     aliquotaIbs: 'aliquotaIbs' in values ? values.aliquotaIbs : 0,
     aliquotaCbs: 'aliquotaCbs' in values ? values.aliquotaCbs : 0,
     creditoIbs: 'creditoIbs' in values ? values.creditoIbs : 0,

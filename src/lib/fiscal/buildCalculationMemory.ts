@@ -107,6 +107,10 @@ function buildInputLines(values: IcmsCalculatorFormValues, result: FiscalCalcula
       if (values.reducaoBase > 0) {
         lines.push({ label: 'Redução de base', value: formatPercent(values.reducaoBase) });
       }
+
+      if (values.aliquotaDifal > 0) {
+        lines.push({ label: 'Alíquota DIFAL', value: formatPercent(values.aliquotaDifal) });
+      }
       break;
     }
     case 'ipi': {
@@ -292,10 +296,29 @@ function buildMemoryLines(values: IcmsCalculatorFormValues, result: FiscalCalcul
         'ICMS-ST a recolher = ICMS-ST bruto - ICMS próprio',
         `ICMS-ST a recolher = ${formatCurrency(stResult.icmsStBruto)} - ${formatCurrency(stResult.valorIcms)} = ${formatCurrency(stResult.valorIcmsSt)}`,
       ),
+    );
+
+    if (stResult.valorDifal > 0) {
+      lines.push(
+        line(
+          'DIFAL',
+          'DIFAL = Base da operação x Alíquota DIFAL',
+          `DIFAL = ${formatCurrency(stResult.baseOperacao)} x ${formatPercent(values.aliquotaDifal)} = ${formatCurrency(stResult.valorDifal)}`,
+        ),
+      );
+    }
+
+    const totalFormula = stResult.valorDifal > 0
+      ? 'Total estimado = Produto + IPI + Frete + Seguro + Outras Despesas - Desconto + ICMS-ST + DIFAL'
+      : 'Total estimado = Produto + IPI + Frete + Seguro + Outras Despesas - Desconto + ICMS-ST';
+
+    const totalParts = `${formatCurrency(values.valorProduto)} + ${formatCurrency(stResult.ipiEfetivo)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} + ${formatCurrency(stResult.valorIcmsSt)}${stResult.valorDifal > 0 ? ` + ${formatCurrency(stResult.valorDifal)}` : ''} = ${formatCurrency(stResult.valorTotal)}`;
+
+    lines.push(
       line(
         'Total estimado',
-        'Total estimado = Produto + IPI + Frete + Seguro + Outras Despesas - Desconto + ICMS-ST',
-        `Total estimado = ${formatCurrency(values.valorProduto)} + ${formatCurrency(stResult.ipiEfetivo)} + ${formatCurrency(values.frete)} + ${formatCurrency(values.seguro)} + ${formatCurrency(values.outrasDespesas)} - ${formatCurrency(values.desconto)} + ${formatCurrency(stResult.valorIcmsSt)} = ${formatCurrency(stResult.valorTotal)}`,
+        totalFormula,
+        `Total estimado = ${totalParts}`,
       ),
     );
 

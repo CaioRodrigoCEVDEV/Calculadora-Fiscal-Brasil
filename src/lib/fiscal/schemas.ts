@@ -117,6 +117,7 @@ const icmsStSchema = z.object({
   ...icmsFields,
   ...ipiFields,
   ...stFields,
+  aliquotaDifal: decimalSchema('A alíquota de DIFAL não pode ser negativa.'),
 });
 
 const icmsReverseSchema = z.object({
@@ -130,6 +131,7 @@ const icmsCompletoSchema = z.object({
   ...icmsFields,
   ...ipiFields,
   ...stFields,
+  aliquotaDifal: decimalSchema('A alíquota de DIFAL não pode ser negativa.'),
 });
 
 const ipiSchema = z.object({
