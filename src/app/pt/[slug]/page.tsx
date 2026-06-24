@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { IcmsAvailableCalculations } from '@/components/icms/IcmsAvailableCalculations';
 import { IcmsCalculator } from '@/components/icms/IcmsCalculator';
+import { IpvaCalculator } from '@/components/ipva/IpvaCalculator';
 import { HomeLanding } from '@/components/site/HomeLanding';
 import { APP_NAME } from '@/lib/site/content';
 import { HOME_FAQ_ITEMS } from '@/lib/site/homeContent';
@@ -142,7 +143,11 @@ export default async function CalculatorRoutePage({ params }: { params: PagePara
               </section>
 
               <section id="simule-seu-calculo-fiscal" className="scroll-mt-24">
-                <IcmsCalculator initialCalculationType={route.calculationType} />
+                {route.component === 'ipva' ? (
+                  <IpvaCalculator />
+                ) : (
+                  <IcmsCalculator initialCalculationType={route.calculationType} />
+                )}
               </section>
             </>
           )}

@@ -1,6 +1,8 @@
 import type { CalculationType } from '@/lib/fiscal/constants';
 import { APP_NAME, APP_SLOGAN, APP_SUBTITLE, CALCULATOR_PAGE_DESCRIPTION } from '@/lib/site/content';
 
+export type RouteComponentVariant = 'default' | 'ipva';
+
 export interface CalculatorRouteConfig {
   slug: string;
   path: string;
@@ -11,6 +13,7 @@ export interface CalculatorRouteConfig {
   calculationType: CalculationType;
   breadcrumbLabel: string;
   keywords: string[];
+  component?: RouteComponentVariant;
 }
 
 const CALCULATOR_ROUTE_CONFIGS: CalculatorRouteConfig[] = [
@@ -156,6 +159,30 @@ const CALCULATOR_ROUTE_CONFIGS: CalculatorRouteConfig[] = [
     calculationType: 'ibs_cbs',
     breadcrumbLabel: 'IBS/CBS',
     keywords: ['calculadora IBS CBS', 'reforma tributária', 'crédito IBS', 'crédito CBS'],
+  },
+  {
+    slug: 'calculadora-ipva-pec',
+    path: '/pt/calculadora-ipva-pec',
+    title: 'Simulador IPVA pela PEC',
+    description:
+      'Simule o IPVA atual pelo valor FIPE e estado do veículo e compare com uma estimativa baseada no teto de 1% proposto pela PEC do IPVA.',
+    h1: 'Simulador de IPVA pela PEC do IPVA',
+    intro: [
+      'Compare uma estimativa do IPVA atual do seu estado com uma simulação baseada no teto de 1% proposto pela PEC do IPVA.',
+      'Informe o valor FIPE do veículo e o estado de registro para visualizar a comparação e a economia estimada.',
+    ],
+    calculationType: 'icms_proprio',
+    breadcrumbLabel: 'IPVA PEC',
+    component: 'ipva',
+    keywords: [
+      'calculadora IPVA',
+      'simular IPVA',
+      'IPVA por estado',
+      'IPVA 1%',
+      'PEC do IPVA',
+      'valor FIPE IPVA',
+      'simulador IPVA PEC',
+    ],
   },
 ];
 
